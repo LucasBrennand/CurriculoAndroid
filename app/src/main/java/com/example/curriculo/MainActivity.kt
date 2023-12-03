@@ -11,6 +11,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,16 +50,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat.startActivity
+import coil.compose.rememberImagePainter
 import com.example.curriculo.R
 import com.example.curriculo.ui.theme.BasicsCodelabTheme
 
@@ -82,7 +91,7 @@ fun MyApp(modifier: Modifier = Modifier) {
             Greetings(
                 name = "Your Name",
                 textsWithExpanded = listOf(
-                    "Quem sou" to "Sou um estudante de Ciências da Computação na UNICAP. Trabalhei com computadores minha vida inteira, sendo assim, acabei optando por seguir um carreira de programação.\n" +
+                    "Quem sou eu" to "Sou um estudante de Ciências da Computação na UNICAP. Trabalhei com computadores minha vida inteira, sendo assim, acabei optando por seguir um carreira de programação.\n" +
                             "Tenho ampla experiência principalmente com Java, mas também trabalho com Javascript, C++ e outros.\n" +
                             "Estou sempre querendo conhecer novas linguagens e aprender mais sobre a área de tecnologia.\n" +
                             "Estou á procura de novos desafios, onde posso aplicar meu conhecimento e gerar resultados tanto para mim quanto para os outros.",
@@ -92,10 +101,13 @@ fun MyApp(modifier: Modifier = Modifier) {
                     "Competências" to
                             "Front-end:\n" +
                             "HTML, CSS, Javascript" +
+                            "\n" +
                             "Back-end:\n" +
                             "Java, C++, Processing\n" +
+                            "\n" +
                             "Outras Habilidades:\n" +
                             "Hardware de Computadores, Excel, Linux\n" +
+                            "\n" +
                             "Idiomas:\n" +
                             "Inglês, Português",
 
@@ -130,11 +142,11 @@ fun OnboardingScreen(
 @Composable
 private fun Greetings(
     modifier: Modifier = Modifier,
-    name: String = "Your Name",
+    name: String = "Lucas Brennand Barbosa Chiaperini",
     textsWithExpanded: List<Pair<String, String>> = List(4) { "Text $it" to "Expanded text $it" }
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        // Add your Circle composable with your name
+        // Add your Circle composable with your name and profile picture
         Circle(Modifier.size(200.dp), name = name)
 
         // Add space between the Circle and the LazyColumn
@@ -152,7 +164,7 @@ private fun Greetings(
             }
         }
 
-        // Add share buttons at the bottom
+        // Add share buttons at the bottom right
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -165,13 +177,15 @@ private fun Greetings(
                 onShareClicked = {
                     /* Handle share options here */
                 },
-                modifier = Modifier.size(50.dp).padding(end = 8.dp) // Increase the button size
+                modifier = Modifier
+                    .size(36.dp) // Increase the button size
+                    .padding(end = 8.dp) // Add padding to the right (adjust as needed)
             )
             WhatsAppShareButton(
                 onShareClicked = {
                     /* Handle WhatsApp share here */
                 },
-                modifier = Modifier.size(50.dp) // Increase the button size
+                modifier = Modifier.size(36.dp) // Increase the button size
             )
         }
     }
@@ -233,29 +247,37 @@ private fun CardContent(text: String, expandedText: String) {
 
 @Composable
 private fun Circle(modifier: Modifier, name: String) {
+    val imageUri = rememberSaveable { mutableStateOf("") }
+    val painter = rememberImagePainter(
+        imageUri.value
+    )
     Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .padding(top = 16.dp).padding(horizontal = 100.dp),
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
+
     ) {
-        Column(
+        Card(
+            shape = CircleShape,
             modifier = Modifier
-                .background(color = Color.Black, shape = CircleShape)
-                .padding(1.dp)
-                .size(200.dp)
-                .aspectRatio(1f)
+                .padding(8.dp)
+                .size(100.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.eu),
+                painter = painter,
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
+                    .wrapContentSize()
+                    .clickable { },
+                contentScale = ContentScale.Crop
             )
         }
+        Text(
+            text = "Lucas Brennand Barbosa Chiaperini",
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(150.dp)
+        )
     }
 }
 

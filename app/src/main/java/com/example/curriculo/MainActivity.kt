@@ -1,4 +1,5 @@
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -49,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -75,19 +77,16 @@ class MainActivity : ComponentActivity() {
 fun MyApp(modifier: Modifier = Modifier) {
     var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
-    // Use a Box to layer content over the background image
     Box(
         modifier = modifier.fillMaxSize(),
     ) {
-        // Background Image
         Image(
-            painter = painterResource(id = R.drawable.backgroundphone), // Replace with your background image resource
+            painter = painterResource(id = R.drawable.backgroundphone),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // Overlay content
         Surface(color = MaterialTheme.colorScheme.background.copy(alpha = 0.1f)) {
             if (shouldShowOnboarding) {
                 OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
@@ -156,13 +155,8 @@ private fun Greetings(
     textsWithExpanded: List<Pair<String, String>> = List(4) { "Text $it" to "Expanded text $it" }
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        // Add your Circle composable with your name and profile picture
         Profile(Modifier.size(200.dp), name = name)
-
-        // Add space between the Circle and the LazyColumn
         Spacer(modifier = Modifier.height(16.dp))
-
-        // LazyColumn with your text items
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -173,34 +167,91 @@ private fun Greetings(
                 Greeting(text = text, expandedText = expandedText)
             }
         }
-
-        // Add share buttons at the bottom right
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .padding(bottom = 32.dp) // Increase the bottom padding for more space
-                .wrapContentWidth(align = Alignment.End), // Align to the end (right) of the parent
-            horizontalArrangement = Arrangement.End // Align buttons to the end (right) of the Row
+                .padding(bottom = 32.dp)
+                .wrapContentWidth(align = Alignment.End),
+            horizontalArrangement = Arrangement.End
         ) {
-            ShareButton(
-                onShareClicked = {
-                    /* Handle share options here */
-                },
+            @Composable
+            fun shareButton(
+                onShareClicked: () -> Unit,
+                modifier: Modifier = Modifier
+            ) {
+                val context = LocalContext.current
+                val url = "LucasBrennandApp"
+                val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                    putExtra(Intent.EXTRA_TEXT, url)
+                    type = "text/plain"
+                }
+                val shareIntent = Intent.createChooser(sendIntent, null)
+                IconButton(
+                    onClick = {
+                        onShareClicked()
+                        context.startActivity(shareIntent)
+                    },
+                    modifier = modifier
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_share_25),
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+            Row(
                 modifier = Modifier
-                    .size(36.dp) // Increase the button size
-                    .padding(end = 8.dp) // Add padding to the right (adjust as needed)
-            )
-            WhatsAppShareButton(
-                onShareClicked = {
-                    /* Handle WhatsApp share here */
-                },
-                modifier = Modifier.size(36.dp) // Increase the button size
-            )
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .padding(bottom = 32.dp)
+                    .wrapContentWidth(align = Alignment.End),
+                horizontalArrangement = Arrangement.End
+            ) {
+                shareButton(
+                    onShareClicked = {
+                        // Handle share click
+                    },
+                    modifier = Modifier
+                        .size(36.dp)
+                        .padding(end = 8.dp)
+                )
+                @Composable
+                fun WhatsAppShareButton(
+                    onShareClicked: () -> Unit,
+                    modifier: Modifier = Modifier
+                ) {
+                    val context = LocalContext.current
+                    val url = "LucasBrennandApp"
+                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                        putExtra(Intent.EXTRA_TEXT, url)
+                        type = "text/plain"
+                    }
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    IconButton(
+                        onClick = {
+                            onShareClicked()
+                            context.startActivity(shareIntent)
+                        },
+                        modifier = modifier
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.whatsapp2),
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                }
+                WhatsAppShareButton(
+                    onShareClicked = {
+                    },
+                    modifier = Modifier.size(36.dp)
+                )
+            }
         }
     }
 }
-
 
 @Composable
 private fun Greeting(text: String, expandedText: String) {
@@ -229,8 +280,8 @@ private fun CardContent(text: String, expandedText: String) {
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF3494E6), // Start color (#3494E6)
-                        Color(0xFFEC6EAD)  // End color (#EC6EAD)
+                        Color(0xFF3494E6),
+                        Color(0xFFEC6EAD)
                     )
                 ),
                 shape = MaterialTheme.shapes.medium
@@ -250,15 +301,14 @@ private fun CardContent(text: String, expandedText: String) {
                     text = text,
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White  // Set the text color to white
+                        color = Color.White
                     )
                 )
                 if (expanded) {
-                    // Display different expanded text for each bar
                     Text(
                         text = expandedText,
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        color = Color.White  // Set the text color to white
+                        color = Color.White
                     )
                 }
             }
@@ -308,78 +358,6 @@ private fun Profile(modifier: Modifier, name: String) {
             modifier = Modifier.width(150.dp),
             color = Color.White
         )
-    }
-}
-
-@Composable
-private fun ShareButton(
-    onShareClicked: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = {
-            onShareClicked()
-            shareContent()
-        },
-        modifier = modifier
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.baseline_share_25),
-            contentDescription = null,
-            modifier = Modifier.size(36.dp),
-            tint = Color.White // Set the icon color to white
-        )
-    }
-}
-
-@Composable
-private fun WhatsAppShareButton(
-    onShareClicked: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = {
-            onShareClicked()
-            shareToWhatsApp()
-        },
-        modifier = modifier
-    ) {
-        // Use the appropriate WhatsApp icon
-        Icon(
-            painter = painterResource(id = R.drawable.whatsapp2),
-            contentDescription = null,
-            modifier = Modifier.size(36.dp),
-            tint = Color.White // Set the icon color to white
-        )
-    }
-}
-
-private fun shareContent() {
-    // Create a share intent
-    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, "Vem olhar meu app!")
-    }
-    // Start the share activity
-    try {
-    } catch (e: ActivityNotFoundException) {
-        // Handle the exception if no activity is found to handle the share intent
-        // You can display a message to the user
-    }
-}
-
-private fun shareToWhatsApp() {
-    // Create a share intent specifically for WhatsApp
-    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        `package` = "com.whatsapp" // Specify WhatsApp package name
-        putExtra(Intent.EXTRA_TEXT, "Your WhatsApp message here")
-    }
-    // Start the share activity
-    try {
-    } catch (e: ActivityNotFoundException) {
-        // Handle the exception if WhatsApp is not installed
-        // You can display a message to the user
     }
 }
 @Preview(showBackground = true, widthDp = 320)

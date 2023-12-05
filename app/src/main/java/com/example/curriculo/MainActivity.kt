@@ -211,7 +211,6 @@ private fun Greetings(
             ) {
                 shareButton(
                     onShareClicked = {
-                        // Handle share click
                     },
                     modifier = Modifier
                         .size(36.dp)
